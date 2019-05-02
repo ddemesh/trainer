@@ -1,6 +1,8 @@
 package by.dima.training.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -8,6 +10,9 @@ import java.util.Set;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "training_complex")
 public class TrainingComplexDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +29,16 @@ public class TrainingComplexDTO {
             joinColumns = {@JoinColumn(name = "id_complex")},
             inverseJoinColumns = {@JoinColumn(name = "id_tag")})
     private Set<TagDTO> tagDTOS;
+
+    public TrainingComplexDTO(Integer id) {
+        this.id = id;
+    }
+
+    public TrainingComplexDTO(String name, Set<TrainingDTO> trainingDTO, Set<TagDTO> tagDTOS) {
+        this.name = name;
+        this.trainingDTO = trainingDTO;
+        this.tagDTOS = tagDTOS;
+    }
 
     @Override
     public boolean equals(Object o) {

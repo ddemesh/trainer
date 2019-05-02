@@ -1,20 +1,19 @@
 package by.dima.training.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
 
-@Entity
 @Data
+@AllArgsConstructor
 public class ExerciseSet {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private Integer count;
-    private Integer rest;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_repeating")
     private ExerciseRepeating repeating;
+
+    public ExerciseSet(Integer id) {
+        this.id = id;
+    }
 }

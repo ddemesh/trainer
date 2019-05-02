@@ -1,7 +1,9 @@
 package by.dima.training.services;
 
+import by.dima.training.model.ExerciseSet;
 import by.dima.training.model.PassedSet;
 
 public interface SetService {
-    void passSet(PassedSet set, Integer userId);
+    ExerciseSet getById(Integer id);
+    void save(ExerciseSet set);
 }

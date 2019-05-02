@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>by.dima</groupId>
-    <artifactId>trainingDTO-service</artifactId>
+    <artifactId>training-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>trainingDTO-service</name>
+    <name>training-service</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>

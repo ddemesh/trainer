@@ -1,5 +1,6 @@
 package by.dima.training.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -7,6 +8,8 @@ import java.util.Date;
 
 @Entity
 @Data
+@AllArgsConstructor
+@Table(name = "passed_set")
 public class PassedSetDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,11 +20,10 @@ public class PassedSetDTO {
 
     @Column(name = "id_set")
     private Integer exerciseSetId;
-//
-//    @Transient
-//    @JsonInclude
-//    private ExerciseSetDTO exerciseSetDTO;
 
     @Column(name = "id_training")
     private Integer idTraining;
+
+    public PassedSetDTO() {
+    }
 }

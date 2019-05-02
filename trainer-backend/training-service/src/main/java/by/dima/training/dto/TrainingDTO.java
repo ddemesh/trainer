@@ -1,6 +1,8 @@
 package by.dima.training.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -8,6 +10,9 @@ import java.util.Set;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "training")
 public class TrainingDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,6 +23,10 @@ public class TrainingDTO {
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_training")
     private Set<PassedSetDTO> passedSetDTOS;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_complex")
+    private TrainingComplexDTO trainingComplexDTO;
 
     @Override
     public boolean equals(Object o) {

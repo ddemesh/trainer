@@ -1,28 +1,19 @@
 package by.dima.training.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.persistence.*;
 import java.util.Date;
 
-@Entity
 @Data
+@AllArgsConstructor
 public class PassedSet {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private Integer idUser;
     private Date execDate;
-
-    @Column(name = "id_set")
-    private Integer exerciseSetId;
-
-    @Transient
-    @JsonInclude
+//    private Integer exerciseSetId;
     private ExerciseSet exerciseSet;
-
-    @Column(name = "id_training")
-    private Integer idTraining;
+    @JsonIgnore
+    private Training training;
 }

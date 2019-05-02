@@ -1,29 +1,23 @@
 package by.dima.training.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import javax.persistence.*;
 import java.util.Objects;
 import java.util.Set;
 
-@Entity
 @Data
+@AllArgsConstructor
 public class Training {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    private Integer rest;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_complex")
+    private Integer weekDay;
     @JsonIgnore
     private TrainingComplex complex;
-
-    @OneToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_training")
     private Set<PassedSet> passedSets;
+
+    public Training(Integer id) {
+        this.id = id;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -31,7 +25,7 @@ public class Training {
         if (o == null || getClass() != o.getClass()) return false;
         Training training = (Training) o;
         return Objects.equals(id, training.id) &&
-                Objects.equals(rest, training.rest) &&
+                Objects.equals(weekDay, training.weekDay) &&
                 Objects.equals(complex, training.complex);
     }
 
