@@ -1,8 +1,7 @@
 package by.dima.training.services.impl;
 
-import by.dima.training.converters.Converter;
-import by.dima.training.dto.TrainingComplexDTO;
 import by.dima.training.exception.IncorrectIdException;
+import by.dima.training.model.PassedSet;
 import by.dima.training.model.Training;
 import by.dima.training.model.TrainingComplex;
 import by.dima.training.repository.ComplexRepository;
@@ -16,14 +15,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class ComplexServiceImpl implements ComplexService {
     private ComplexRepository complexRepository;
-    private Converter<TrainingComplexDTO, TrainingComplex> complexConverter;
-    private Converter<TrainingComplex, TrainingComplexDTO> complexDTOConverter;
 
     private SetService setService;
     private PassedSetService passedSetService;
@@ -31,10 +29,8 @@ public class ComplexServiceImpl implements ComplexService {
     private ConstantHolder constants;
 
     @Autowired
-    public ComplexServiceImpl(ComplexRepository complexRepository, Converter<TrainingComplexDTO, TrainingComplex> complexConverter, Converter<TrainingComplex, TrainingComplexDTO> complexDTOConverter, SetService setService, PassedSetService passedSetService, TrainingService trainingService, ConstantHolder constants) {
+    public ComplexServiceImpl(ComplexRepository complexRepository, SetService setService, PassedSetService passedSetService, TrainingService trainingService, ConstantHolder constants) {
         this.complexRepository = complexRepository;
-        this.complexConverter = complexConverter;
-        this.complexDTOConverter = complexDTOConverter;
         this.setService = setService;
         this.passedSetService = passedSetService;
         this.trainingService = trainingService;
@@ -43,21 +39,17 @@ public class ComplexServiceImpl implements ComplexService {
 
     @Override
     public void addToFavourites(TrainingComplex complex, Integer userId) {
-        TrainingComplexDTO complexDTO = complexDTOConverter.convert(complex);
-        complexDTO.getTrainingDTO().forEach(training -> training.getPassedSetDTOS()
+        complex.getTraining().forEach(training -> training.getPassedSets().addAll(training.getPassedSets()
                 .stream()
-                .filter(set -> set.getExecDate() == null)
-                .findFirst()
-                .ifPresent(set -> {
-                    training.getPassedSetDTOS().add(passedSetService.pass(set, userId));
-                }));
+                .filter(set -> set.getExecDate() == null && constants.getSystemUserId().equals(set.getIdUser()))
+                .map(passedSet -> passedSetService.pass(passedSet, userId)).collect(Collectors.toList())));
 
-        complexRepository.save(complexDTO);
+        complexRepository.save(complex);
     }
 
     @Override
-    public void removeFromFavourites(TrainingComplex complex, Integer userId) {
-        passedSetService.removePassedSetsByTrainingsAndUser(userId, complex.getTraining()
+    public void removeFromFavourites(Integer complexId, Integer userId) {
+        passedSetService.removePassedSetsByTrainingsAndUser(userId, trainingService.getAllByComplexId(complexId)
                 .parallelStream()
                 .map(Training::getId)
                 .collect(Collectors.toList()));
@@ -69,7 +61,7 @@ public class ComplexServiceImpl implements ComplexService {
 
         complex.getTraining().forEach(training -> trainingService.save(training, userId));
 
-        complexRepository.save(complexDTOConverter.convert(complex));
+        complexRepository.save(complex);
     }
 
     @Override
@@ -78,7 +70,7 @@ public class ComplexServiceImpl implements ComplexService {
 
         trainingService.getAllByIds(passedSetService.getPassedSetsByDate(userId, null)
                 .stream()
-                .map(passedSet -> passedSet.getTraining().getId())
+                .map(PassedSet::getIdTraining)
                 .collect(Collectors.toSet()))
                 .forEach(training -> complexes.add(training.getComplex()));
 
@@ -93,13 +85,25 @@ public class ComplexServiceImpl implements ComplexService {
     @Override
     public TrainingComplex getById(Integer complexId, Integer userId) {
         TrainingComplex complex = gerByIdOrThrow(complexId);
+        TrainingComplex result = new TrainingComplex();
+        result.setId(complexId);
+        result.setName(complex.getName());
+        result.setTags(new HashSet<>(complex.getTags()));
 
-        complex.getTraining().forEach(training -> {
-            training.setPassedSets(training.getPassedSets().stream().filter(set -> set.getExecDate() == null && set.getIdUser().equals(userId)).collect(Collectors.toSet()));
-            training.getPassedSets().forEach(set -> set.setExerciseSet(setService.getById(set.getExerciseSet().getId())));
-        });
+        result.setTraining(complex.getTraining().parallelStream().map(training -> {
+            Training copyTraining = new Training();
+            copyTraining.setId(training.getId());
+            copyTraining.setWeekDay(training.getWeekDay());
+            copyTraining.setComplex(training.getComplex());
+            copyTraining.setPassedSets(training.getPassedSets().stream().filter(set -> set.getExecDate() == null && set.getIdUser().equals(userId)).collect(Collectors.toList()));
+            if (copyTraining.getPassedSets().size() == 0) {
+                copyTraining.setPassedSets(training.getPassedSets().stream().filter(set -> set.getExecDate() == null && set.getIdUser().equals(constants.getSystemUserId())).collect(Collectors.toList()));
+            }
+            copyTraining.getPassedSets().forEach(set -> set.setSet(setService.getById(set.getExerciseSet())));
+            return copyTraining;
+        }).collect(Collectors.toSet()));
 
-        return complex;
+        return result;
     }
 
     @Override
@@ -115,7 +119,7 @@ public class ComplexServiceImpl implements ComplexService {
     }
 
     private TrainingComplex gerByIdOrThrow(Integer complexId) {
-        return complexConverter.convert(complexRepository.findById(complexId)
-                .orElseThrow(() -> new IncorrectIdException("Complex with such id not ")));
+        return complexRepository.findById(complexId)
+                .orElseThrow(() -> new IncorrectIdException("Complex with such id not "));
     }
 }

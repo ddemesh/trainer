@@ -6,7 +6,7 @@ import java.util.Collection;
 
 public interface ComplexService {
     void addToFavourites(TrainingComplex complex, Integer userId);
-    void removeFromFavourites(TrainingComplex complex, Integer userId);
+    void removeFromFavourites(Integer complexId, Integer userId);
     void save(TrainingComplex complex, Integer userId);
     Collection<TrainingComplex> getFavourites(Integer userId);
     Collection<TrainingComplex> getAvailable();

@@ -1,5 +1,6 @@
 package by.dima.auth.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,6 +25,10 @@ public class User implements UserDetails {
     @Size(min = 4, max = 20)
     private String password;
 
+    @JsonIgnore
+    @Column
+    private String imageUrl;
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -34,6 +39,14 @@ public class User implements UserDetails {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     @Override

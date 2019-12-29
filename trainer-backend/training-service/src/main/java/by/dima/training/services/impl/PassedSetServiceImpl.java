@@ -1,13 +1,12 @@
 package by.dima.training.services.impl;
 
-import by.dima.training.converters.Converter;
-import by.dima.training.dto.PassedSetDTO;
 import by.dima.training.model.PassedSet;
 import by.dima.training.repository.PassedRepository;
 import by.dima.training.services.PassedSetService;
 import by.dima.training.services.SetService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -17,15 +16,11 @@ import java.util.stream.Collectors;
 public class PassedSetServiceImpl implements PassedSetService {
 
     private PassedRepository passedRepository;
-    private Converter<PassedSetDTO, PassedSet> passedSetConverter;
-    private Converter<PassedSet, PassedSetDTO> passedSetDTOConverter;
 
     private SetService setService;
 
-    public PassedSetServiceImpl(PassedRepository passedRepository, Converter<PassedSetDTO, PassedSet> passedSetConverter, Converter<PassedSet, PassedSetDTO> passedSetDTOConverter, SetService setService) {
+    public PassedSetServiceImpl(PassedRepository passedRepository, SetService setService) {
         this.passedRepository = passedRepository;
-        this.passedSetConverter = passedSetConverter;
-        this.passedSetDTOConverter = passedSetDTOConverter;
         this.setService = setService;
     }
 
@@ -35,35 +30,35 @@ public class PassedSetServiceImpl implements PassedSetService {
         passedSet.setExecDate(null);
         passedSet.setIdUser(userId);
 //        passedSet.setTraining(training.getId());
-        passedSet.getExerciseSet().setId(null);
-        setService.save(passedSet.getExerciseSet());
-//        passedSet.setExerciseSetId(set.getExerciseSet().getId());
         passedSet.setExerciseSet(null);
-        passedRepository.save(passedSetDTOConverter.convert(passedSet));
+        //todo -- check behaviour
+        setService.save(passedSet.getSet());
+//        passedSet.setExerciseSetId(set.getExerciseSet().getId());
+        passedSet.setExerciseSet(passedSet.getSet().getId());
+        passedRepository.save(passedSet);
 
     }
 
     @Override
     public PassedSet getById(Integer id) {
-        return passedSetConverter.convert(passedRepository.findById(id).get());
+        return passedRepository.findById(id).get();
     }
 
     @Override
-    public PassedSetDTO pass(PassedSetDTO set, Integer userId) {
-        PassedSetDTO passedSetDTO = new PassedSetDTO();
+    public PassedSet pass(PassedSet set, Integer userId) {
+        PassedSet passedSet = new PassedSet();
 
-        passedSetDTO.setIdTraining(set.getIdTraining());
-        passedSetDTO.setIdUser(userId);
-        passedSetDTO.setExerciseSetId(set.getExerciseSetId());
+        passedSet.setIdTraining(set.getIdTraining());
+        passedSet.setIdUser(userId);
+        passedSet.setExerciseSet(set.getExerciseSet());
+        passedSet.setExecDate(set.getExecDate());
 
-        return passedRepository.save(passedSetDTO);
+        return passedRepository.save(passedSet);
     }
 
     @Override
     public List<PassedSet> getPassedSetsByDate(Integer userId, Date date) {
-        return passedRepository.findAllByIdUserAndExecDate(userId, date).parallelStream()
-                .map(passedSetConverter::convert)
-                .collect(Collectors.toList());
+        return passedRepository.findAllByIdUserAndExecDate(userId, date).parallelStream().distinct().collect(Collectors.toList());
     }
 
     @Override

@@ -1,19 +1,18 @@
 package by.dima.training.config;
 
-import by.dima.training.utils.CustomAccessTokenConverter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
+import by.dima.common.services.impl.CustomAccessTokenConverter;
+import by.dima.common.utils.UserInfoExtractor;
+import by.dima.common.utils.UserInfoExtractorInfoImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
-import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
-
-import java.util.List;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 @Configuration
 @EnableResourceServer
@@ -23,26 +22,34 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
         http.authorizeRequests().anyRequest().authenticated();
     }
 
-    @Autowired
-    private DiscoveryClient discoveryClient;
-
-    @Primary
     @Bean
-    public RemoteTokenServices tokenService() {
-        List<ServiceInstance> services = discoveryClient.getInstances("auth-service");
-        RemoteTokenServices tokenService = new RemoteTokenServices();
-        if (services != null && services.size() > 0) {
-            tokenService.setCheckTokenEndpointUrl(
-                    services.get(0).getUri() + "/oauth/check_token");
-        }
-        tokenService.setClientId("trainer_client");
-        tokenService.setClientSecret("trainer_password");
-        tokenService.setAccessTokenConverter(accessTokenConverter());
-        return tokenService;
+    public TokenStore tokenStore() {
+        return new JwtTokenStore(accessTokenConverter());
     }
 
     @Bean
-    public AccessTokenConverter accessTokenConverter() {
-        return  new CustomAccessTokenConverter();
+    public JwtAccessTokenConverter accessTokenConverter() {
+        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+        converter.setAccessTokenConverter(customAccessTokenConverter());
+        converter.setSigningKey("123");
+        return converter;
+    }
+
+    @Primary
+    @Bean
+    public DefaultTokenServices tokenService() {
+        DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+        defaultTokenServices.setTokenStore(tokenStore());
+        return defaultTokenServices;
+    }
+
+    @Bean
+    public CustomAccessTokenConverter customAccessTokenConverter() {
+        return new CustomAccessTokenConverter();
+    }
+
+    @Bean
+    public UserInfoExtractor userInfoExtractor() {
+        return new UserInfoExtractorInfoImpl();
     }
 }

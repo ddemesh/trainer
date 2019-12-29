@@ -8,6 +8,7 @@ import java.util.Set;
 
 public interface TrainingService {
     List<Training> getAllByIds(Set<Integer> ids);
+    List<Training> getAllByComplexId(Integer id);
     void save(Training training, Integer userId);
     //
 //    Iterable<TrainingComplex> getAllTrainings();

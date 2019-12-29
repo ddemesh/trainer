@@ -2,16 +2,12 @@ package by.dima.training.controller;
 
 import by.dima.training.model.TrainingComplex;
 import by.dima.training.services.ComplexService;
-import by.dima.training.services.TrainingService;
-import by.dima.training.utils.UserInfoExtractor;
+import by.dima.common.utils.UserInfoExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/training")
@@ -47,7 +43,7 @@ public class TrainingController {
 
     @DeleteMapping("/me/{complexId}")
     public Object delete(@PathVariable Integer complexId, Authentication authentication) {
-        complexService.removeFromFavourites(complexService.getById(complexId), infoExtractor.getUserId((authentication)));
+        complexService.removeFromFavourites(complexId, infoExtractor.getUserId((authentication)));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

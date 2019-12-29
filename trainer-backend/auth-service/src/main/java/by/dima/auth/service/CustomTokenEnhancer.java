@@ -17,6 +17,7 @@ public class CustomTokenEnhancer implements TokenEnhancer {
 
         additionalInfo.put("authorities", user.getAuthorities());
         additionalInfo.put("user_id", user.getId());
+        additionalInfo.put("image", ((User) authentication.getUserAuthentication().getPrincipal()).getImageUrl());
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
 

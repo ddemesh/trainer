@@ -1,19 +1,30 @@
 package by.dima.training.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import java.util.Objects;
-import java.util.Set;
+import lombok.NoArgsConstructor;
 
+import javax.persistence.*;
+import java.util.List;
+import java.util.Objects;
+
+@Entity
 @Data
-@AllArgsConstructor
+@NoArgsConstructor
 public class Training {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private Integer weekDay;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_complex")
     @JsonIgnore
     private TrainingComplex complex;
-    private Set<PassedSet> passedSets;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "id_training", updatable = false)
+    private List<PassedSet> passedSets;
 
     public Training(Integer id) {
         this.id = id;

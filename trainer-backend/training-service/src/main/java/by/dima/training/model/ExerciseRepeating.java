@@ -1,18 +1,36 @@
 package by.dima.training.model;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import javax.persistence.*;
 import java.util.Objects;
+import java.util.Set;
 
+@Entity
 @Data
-@AllArgsConstructor
+@NoArgsConstructor
 public class ExerciseRepeating {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty
     private Integer id;
+
+    @JsonProperty
     private Integer complexity;
     private Integer count;
     private Integer rest;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_exercise")
     private Exercise exercise;
+
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_repeating")
+    @JsonIgnore
+    private Set<ExerciseSet> sets;
 
     @Override
     public boolean equals(Object o) {
